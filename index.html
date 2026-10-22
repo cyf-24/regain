@@ -1,0 +1,396 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>REGAIN Leaderboard</title>
+<meta name="description" content="REGAIN Track 1 leaderboard: streaming failure detection for robot foundation models.">
+<style>:root{color-scheme:light}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@112,600;112,800&family=Public+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* Layout: one reading column; ranking table is the hero, protocol notes follow as a quiet appendix. */
+:root {
+  --paper: #f4f6f8;
+  --panel: #ffffff;
+  --ink: #17202b;
+  --muted: #5b6676;
+  --rule: #d9dfe6;
+  --fail: #d0544a;      /* failure side: onset timing credit */
+  --succ: #2f8f83;      /* success side: TNR */
+  --accent: #23415f;
+  --chip-l: #e6eef6; --chip-l-ink: #23415f;
+  --chip-v: #e9f3f1; --chip-v-ink: #1f6a61;
+  --chip-a: #f6ebea; --chip-a-ink: #9a3b33;
+  --font-display: "Archivo", "Arial Narrow", system-ui, sans-serif;
+  --font-body: "Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-data: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --paper: #10161d; --panel: #161e27; --ink: #e5eaf0; --muted: #98a4b3; --rule: #2a3542;
+    --fail: #e5786d; --succ: #4fb7a9; --accent: #9cc0e4;
+    --chip-l: #1d2c3c; --chip-l-ink: #a9c6e4;
+    --chip-v: #173029; --chip-v-ink: #86d3c6;
+    --chip-a: #3a2220; --chip-a-ink: #f0a59d;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --paper: #10161d; --panel: #161e27; --ink: #e5eaf0; --muted: #98a4b3; --rule: #2a3542;
+  --fail: #e5786d; --succ: #4fb7a9; --accent: #9cc0e4;
+  --chip-l: #1d2c3c; --chip-l-ink: #a9c6e4;
+  --chip-v: #173029; --chip-v-ink: #86d3c6;
+  --chip-a: #3a2220; --chip-a-ink: #f0a59d;
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.wrap { max-width: 1120px; margin: 0 auto; padding-block: 48px 72px; display: grid; gap: 56px; }
+
+header { display: grid; gap: 18px; }
+.eyebrow { font-family: var(--font-data); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+h1 { font-family: var(--font-display); font-stretch: 112%; font-weight: 800; font-size: clamp(34px, 5.2vw, 56px); line-height: 1.02; margin: 0; text-wrap: balance; letter-spacing: -.01em; }
+h1 span { color: var(--accent); }
+.lede { max-width: 66ch; margin: 0; color: var(--muted); font-size: 16px; }
+.links { display: flex; flex-wrap: wrap; gap: 10px; }
+.links a { font-weight: 600; font-size: 14px; color: var(--accent); text-decoration: none; border: 1px solid var(--rule); background: var(--panel); padding: 8px 14px; border-radius: 6px; }
+.links a:hover, .links a:focus-visible { border-color: var(--accent); outline: none; }
+
+h2 { font-family: var(--font-display); font-stretch: 112%; font-weight: 800; font-size: 26px; margin: 0; text-wrap: balance; }
+h3 { font-family: var(--font-display); font-stretch: 112%; font-weight: 600; font-size: 18px; margin: 0; }
+section { display: grid; gap: 18px; }
+.sec-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 12px; }
+.note { color: var(--muted); font-size: 13.5px; margin: 0; max-width: 90ch; }
+
+.controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.controls .lab { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-right: 4px; }
+.filter { font: 600 13px var(--font-body); color: var(--ink); background: var(--panel); border: 1px solid var(--rule); border-radius: 999px; padding: 5px 12px; cursor: pointer; }
+.filter[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.filter:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.table-box { overflow-x: auto; background: var(--panel); border: 1px solid var(--rule); border-radius: 10px; }
+table { border-collapse: collapse; width: 100%; min-width: 900px; font-variant-numeric: tabular-nums; }
+th, td { padding: 11px 12px; text-align: right; border-bottom: 1px solid var(--rule); white-space: nowrap; }
+tbody tr:last-child td { border-bottom: 0; }
+th { font-size: 12px; font-weight: 600; color: var(--muted); vertical-align: bottom; line-height: 1.3; }
+th.l, td.l { text-align: left; }
+th button { all: unset; cursor: pointer; display: inline-flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+th.l button { align-items: flex-start; }
+th button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 3px; }
+th button .dir { font-family: var(--font-data); color: var(--muted); font-size: 11px; }
+th[aria-sort="ascending"] button, th[aria-sort="descending"] button { color: var(--ink); }
+th.main { background: color-mix(in srgb, var(--accent) 7%, transparent); }
+td.main { background: color-mix(in srgb, var(--accent) 5%, transparent); }
+td { font-family: var(--font-data); font-size: 13.5px; }
+td.rank { color: var(--muted); width: 3em; }
+td.name { font-family: var(--font-body); font-size: 14.5px; font-weight: 600; }
+td.name small { display: block; font-weight: 400; font-size: 12px; color: var(--muted); }
+.chip { display: inline-block; font: 600 11px var(--font-body); letter-spacing: .03em; padding: 2px 8px; border-radius: 999px; }
+.chip.L { background: var(--chip-l); color: var(--chip-l-ink); }
+.chip.V { background: var(--chip-v); color: var(--chip-v-ink); }
+.chip.A { background: var(--chip-a); color: var(--chip-a-ink); }
+.best { font-weight: 600; color: var(--ink); }
+.second { text-decoration: underline; text-underline-offset: 3px; }
+.dash { color: var(--muted); }
+.mark { color: var(--muted); font-size: 11px; vertical-align: super; }
+
+.split { display: flex; align-items: center; gap: 10px; justify-content: flex-end; }
+.split b { font-weight: 600; min-width: 3.2em; text-align: right; }
+.bar { position: relative; width: 120px; height: 10px; background: color-mix(in srgb, var(--rule) 60%, transparent); border-radius: 2px; display: flex; overflow: hidden; }
+.bar i { display: block; height: 100%; }
+.bar i.f { background: var(--fail); }
+.bar i.s { background: var(--succ); }
+.bar::after { content: ""; position: absolute; left: 50%; top: -2px; bottom: -2px; width: 1px; background: var(--ink); opacity: .55; }
+
+.legend { display: flex; flex-wrap: wrap; gap: 16px; font-size: 13px; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.sw { width: 12px; height: 10px; border-radius: 2px; display: inline-block; }
+.sw.f { background: var(--fail); } .sw.s { background: var(--succ); }
+.sw.r { width: 1px; height: 12px; background: var(--ink); opacity: .55; }
+
+.protocol { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 28px; align-items: start; }
+.protocol dl { margin: 0; display: grid; gap: 12px; }
+.protocol dt { font-weight: 600; }
+.protocol dd { margin: 0; color: var(--muted); font-size: 14px; }
+.formula { font-family: var(--font-data); font-size: 13px; background: var(--panel); border: 1px solid var(--rule); border-radius: 8px; padding: 12px 14px; overflow-x: auto; white-space: nowrap; }
+figure { margin: 0; display: grid; gap: 8px; }
+figure svg { width: 100%; max-width: 100%; height: auto; display: block; }
+figcaption { font-size: 13px; color: var(--muted); }
+.svg-axis { stroke: var(--rule); }
+.svg-tick { fill: var(--muted); font-family: var(--font-data); font-size: 11px; }
+.svg-curve { stroke: var(--accent); fill: none; stroke-width: 2.2; }
+.svg-onset { stroke: var(--fail); stroke-dasharray: 3 3; }
+.svg-label { fill: var(--ink); font-family: var(--font-body); font-size: 12px; }
+
+ul.caveats { margin: 0; padding-left: 18px; display: grid; gap: 8px; color: var(--muted); font-size: 14px; max-width: 90ch; }
+footer { color: var(--muted); font-size: 13px; border-top: 1px solid var(--rule); padding-top: 18px; }
+@media (prefers-reduced-motion: no-preference) { .bar i { transition: width .25s ease; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">REGAIN benchmark · Track 1 · 500 rollouts · 32 tasks</div>
+    <h1>REGAIN <span>Leaderboard</span></h1>
+    <p class="lede">Streaming failure detection for robot foundation models. Each monitor watches a rollout as it unfolds and must raise an alarm close to the human-annotated failure onset, without alarming on successful rollouts.</p>
+    <nav class="links" aria-label="Page sections">
+      <a href="#ranking">Overall ranking</a>
+      <a href="#datasets">Results across datasets</a>
+      <a href="#protocol">Protocol &amp; metrics</a>
+    </nav>
+  </header>
+
+  <section id="ranking" aria-labelledby="ranking-h">
+    <div class="sec-head">
+      <h2 id="ranking-h">Overall ranking</h2>
+      <div class="controls" role="group" aria-label="Filter by monitor family">
+        <span class="lab">Family</span>
+        <button class="filter" id="f-all" data-f="all" aria-pressed="true">All</button>
+        <button class="filter" id="f-L" data-f="L" aria-pressed="false">Lightweight</button>
+        <button class="filter" id="f-V" data-f="V" aria-pressed="false">Small VLM</button>
+        <button class="filter" id="f-A" data-f="A" aria-pressed="false">API</button>
+      </div>
+    </div>
+    <p class="note">REGAIN, 250 failed and 250 successful rollouts. Ranked by onset-aware balanced time-weighted accuracy (bTWA<sub>on</sub>, τ = 10 s). Rank stays fixed when you sort by another column. Bold marks the best value in a column and underline the second best.</p>
+    <div class="legend" aria-hidden="true">
+      <span><i class="sw f"></i>Onset timing credit on failures (half weight)</span>
+      <span><i class="sw s"></i>No alarm on successes, TNR (half weight)</span>
+      <span><i class="sw r"></i>50 = a monitor that never alarms</span>
+    </div>
+    <div class="table-box">
+      <table id="rank-table">
+        <caption class="note" style="caption-side: bottom; text-align: left; padding: 10px 12px;">bACC, Recall, TNR and bTWA in percent; MAE in seconds over detected failures; QLat is mean query latency in milliseconds. bTWA uses the original rollout-time credit 1 − t/T for comparison with prior work.</caption>
+        <thead><tr id="rank-head"></tr></thead>
+        <tbody id="rank-body"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="datasets" aria-labelledby="datasets-h">
+    <div class="sec-head"><h2 id="datasets-h">Results across datasets</h2></div>
+    <p class="note">REGAIN against two external failure-detection datasets. BotFails has 34 failed and 16 successful episodes; FailureSlot+ has 250 of each, with planner-generated successes and policy-generated failures. Dashes mark monitors that need source-policy outputs the external datasets do not provide.</p>
+    <div class="table-box">
+      <table id="ext-table" style="min-width: 980px">
+        <thead>
+          <tr>
+            <th class="l" rowspan="2" scope="col">Monitor</th>
+            <th colspan="3" scope="colgroup" style="text-align:center">REGAIN</th>
+            <th colspan="3" scope="colgroup" style="text-align:center">BotFails</th>
+            <th colspan="3" scope="colgroup" style="text-align:center">FailureSlot+</th>
+          </tr>
+          <tr id="ext-head"></tr>
+        </thead>
+        <tbody id="ext-body"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="protocol" aria-labelledby="protocol-h">
+    <h2 id="protocol-h">Protocol &amp; metrics</h2>
+    <div class="protocol">
+      <dl>
+        <div><dt>Streaming input</dt><dd>Monitors see only observations and policy outputs available up to the current query. A rollout counts as detected once any alarm fires; thresholds are frozen on a disjoint calibration split.</dd></div>
+        <div><dt>bACC, Recall, TNR</dt><dd>Failed rollouts are positives. Recall is the share of failures with an alarm, TNR the share of successes without one, and bACC their mean.</dd></div>
+        <div><dt>MAE</dt><dd>Mean absolute gap between the first alarm and the human-reviewed onset, over detected failures only. Misses are reported through Recall.</dd></div>
+        <div><dt>bTWA<sub>on</sub></dt><dd>Balanced time-weighted accuracy with the credit for each detected failure based on its distance to the annotated onset instead of its position in the rollout. Early and late alarms are penalised equally.</dd></div>
+      </dl>
+      <div style="display:grid; gap:14px">
+        <div class="formula">bTWA<sub>on</sub> = ½ · ( (1/N₊) · Σ<sub>i∈TP</sub> 1 / (1 + (d<sub>i</sub>/τ)²) + TNR ),&nbsp;&nbsp; d<sub>i</sub> = t̂<sub>i</sub> − t<sub>i</sub>*,&nbsp;&nbsp; τ = 10 s</div>
+        <figure>
+          <svg id="kernel" viewBox="0 0 440 190" role="img" aria-labelledby="kernel-title">
+            <title id="kernel-title">Timing credit for a detected failure against alarm time minus onset, from −40 s to +40 s. Credit is 1 at the onset, 0.5 at ±10 s and 0.2 at ±20 s.</title>
+          </svg>
+          <figcaption>Credit per detected failure. An alarm 10 s before or after the onset earns half credit; a missed failure earns none.</figcaption>
+        </figure>
+      </div>
+    </div>
+    <h3>Notes on the current results</h3>
+    <ul class="caveats">
+      <li>The REGAIN roster was updated on 23 October 2026: one RoboTwin click_alarmclock failure with an extreme-action anomaly was replaced by another failure of the same task. All non-API monitors are scored on the current roster.<span class="mark">*</span> API monitors were evaluated on the previous roster, which differs by that one episode.</li>
+      <li>QLat values are retained batch-one profiles; API latency includes network and service time.</li>
+      <li>bTWA in the ranking table approximates rollout length from the last query time for non-API monitors and from frame count for API monitors.</li>
+    </ul>
+  </section>
+
+  <footer>REGAIN: Benchmarking Failure Detection and Recovery for Robot Foundation Models. Track 1 results as of 23 October 2026.</footer>
+</div>
+
+<script>
+const FAM = { L: "Lightweight", V: "Small VLM", A: "API" };
+// REGAIN Track 1, current roster (API rows: previous roster). TNR and bACC in %, MAE s, QLat ms.
+const ROWS = [
+  { m: "Qwen3.5-0.8B FailSafe-style", f: "V", on: 78.64, bacc: 89.2, rec: 97.2, tnr: 81.2, mae: 6.74, btwa: 72.1, q: 104 },
+  { m: "Qwen3.5-4B FailSafe-style", f: "V", on: 77.74, bacc: 89.0, rec: 95.6, tnr: 82.4, mae: 7.57, btwa: 72.2, q: 134 },
+  { m: "STAC", f: "L", on: 60.72, bacc: 85.6, rec: 88.0, tnr: 83.2, mae: 22.11, btwa: 56.1, q: 210 },
+  { m: "Hide-and-Seek", f: "L", on: 59.97, bacc: 76.0, rec: 76.4, tnr: 75.6, mae: 14.53, btwa: 58.8, q: 5.23 },
+  { m: "PRM-as-a-Judge", f: "V", on: 59.36, bacc: 85.0, rec: 84.8, tnr: 85.2, mae: 18.95, btwa: 59.0, q: 857 },
+  { m: "SAFE-LSTM", f: "L", on: 59.26, bacc: 71.8, rec: 52.8, tnr: 90.8, mae: 17.69, btwa: 60.6, q: 2.65 },
+  { m: "FailureSpot", f: "L", on: 57.65, bacc: 67.2, rec: 56.4, tnr: 78.0, mae: 10.41, btwa: 56.5, q: 0.176 },
+  { m: "SAFE-MLP", f: "L", on: 56.19, bacc: 76.4, rec: 65.2, tnr: 87.6, mae: 23.37, btwa: 58.9, q: 1.28 },
+  { m: "ActProbe", f: "L", on: 55.31, bacc: 80.0, rec: 75.6, tnr: 84.4, mae: 27.99, btwa: 66.5, q: 0.291 },
+  { m: "FIPER", f: "L", on: 53.30, bacc: 65.0, rec: 43.6, tnr: 86.4, mae: 20.76, btwa: 53.8, q: 760 },
+  { m: "STAC-Single", f: "L", on: 52.51, bacc: 58.0, rec: 25.6, tnr: 90.4, mae: 15.47, btwa: 52.5, q: 0.029 },
+  { m: "LogpZO", f: "L", on: 48.46, bacc: 64.8, rec: 68.4, tnr: 61.2, mae: 16.68, btwa: 55.9, q: 153 },
+  { m: "Qwen3.5-4B Base", f: "V", on: 45.18, bacc: 54.8, rec: 51.6, tnr: 58.0, mae: 14.52, btwa: 49.2, q: 476 },
+  { m: "RoboMeter", f: "V", on: 44.51, bacc: 66.6, rec: 99.6, tnr: 33.6, mae: 15.47, btwa: 51.2, q: 164 },
+  { m: "Qwen3-VL-4B", f: "V", on: 36.03, bacc: 56.4, rec: 78.8, tnr: 34.0, mae: 18.66, btwa: 48.6, q: 215 },
+  { m: "GPT 6.1 Sol", f: "A", on: 35.36, bacc: 56.4, rec: 100.0, tnr: 12.8, mae: 15.11, btwa: 49.2, q: 57505, prev: true },
+  { m: "Qwen3.5-0.8B Base", f: "V", on: 32.82, bacc: 53.0, rec: 80.4, tnr: 25.6, mae: 17.28, btwa: 46.5, q: 192 },
+  { m: "Gemini 3.8 Flash", f: "A", on: 26.83, bacc: 52.0, rec: 100.0, tnr: 4.0, mae: 19.35, btwa: 48.0, q: 13206, prev: true },
+  { m: "DeepSeek V4.1 Flash", f: "A", on: 24.09, bacc: 53.4, rec: 100.0, tnr: 6.8, mae: 22.55, btwa: 50.3, q: 5776, prev: true },
+].map((r, i) => ({ ...r, rank: i + 1, tds: 2 * r.on - r.tnr }));
+
+const COLS = [
+  { k: "rank", label: "Rank", cls: "l", lower: true, fmt: v => v },
+  { k: "m", label: "Monitor", cls: "l", text: true },
+  { k: "on", label: "bTWA<sub>on</sub>", dir: "↑", main: true, lower: false },
+  { k: "bacc", label: "bACC", dir: "↑", lower: false, d: 1 },
+  { k: "rec", label: "Recall", dir: "↑", lower: false, d: 1 },
+  { k: "tnr", label: "TNR", dir: "↑", lower: false, d: 1 },
+  { k: "mae", label: "MAE (s)", dir: "↓", lower: true, d: 2 },
+  { k: "btwa", label: "bTWA", dir: "↑", lower: false, d: 1 },
+  { k: "q", label: "QLat (ms)", dir: "↓", lower: true, q: true },
+];
+
+function fmtQ(v) { return v >= 100 ? Math.round(v).toLocaleString("en-US") : v >= 1 ? v.toFixed(2) : v.toFixed(3); }
+
+function podium(rows, key, lower) {
+  const vals = [...new Set(rows.map(r => r[key]))].sort((a, b) => lower ? a - b : b - a);
+  return { best: vals[0], second: vals[1] };
+}
+
+let sortKey = "rank", sortLower = true, family = "all";
+
+function renderRanking() {
+  const head = document.getElementById("rank-head");
+  head.innerHTML = COLS.map(c => {
+    const sorted = c.k === sortKey;
+    const aria = sorted ? (sortLower ? "ascending" : "descending") : "none";
+    return `<th scope="col" class="${c.cls || ""} ${c.main ? "main" : ""}" aria-sort="${aria}"><button type="button" data-k="${c.k}"><span>${c.label}</span>${c.dir ? `<span class="dir">${c.dir}</span>` : ""}</button></th>`;
+  }).join("");
+  head.querySelectorAll("button").forEach(b => b.addEventListener("click", () => {
+    const col = COLS.find(c => c.k === b.dataset.k);
+    if (sortKey === col.k) sortLower = !sortLower;
+    else { sortKey = col.k; sortLower = col.text ? true : !!col.lower; }
+    renderRanking();
+  }));
+
+  const rows = ROWS.filter(r => family === "all" || r.f === family);
+  const marks = {};
+  COLS.filter(c => c.dir).forEach(c => { marks[c.k] = podium(ROWS, c.k, c.lower); });
+  rows.sort((a, b) => {
+    const x = a[sortKey], y = b[sortKey];
+    if (typeof x === "string") return sortLower ? x.localeCompare(y) : y.localeCompare(x);
+    return sortLower ? x - y : y - x;
+  });
+
+  document.getElementById("rank-body").innerHTML = rows.map(r => {
+    const cell = c => {
+      const v = r[c.k];
+      const m = marks[c.k];
+      const cls = m && v === m.best ? "best" : m && v === m.second ? "second" : "";
+      if (c.k === "rank") return `<td class="rank l">${v}</td>`;
+      if (c.k === "m") return `<td class="name l">${r.m}${r.prev ? '<span class="mark">*</span>' : ""} <span class="chip ${r.f}">${FAM[r.f]}</span>${r.note ? `<small>${r.note}</small>` : ""}</td>`;
+      if (c.k === "on") {
+        const f = Math.max(0, r.tds) / 2, s = r.tnr / 2;
+        return `<td class="main"><div class="split"><span class="bar" role="img" aria-label="Timing credit ${r.tds.toFixed(1)}, TNR ${r.tnr.toFixed(1)}"><i class="f" style="width:${f}%"></i><i class="s" style="width:${s}%"></i></span><b class="${cls}">${v.toFixed(1)}</b></div></td>`;
+      }
+      const txt = c.q ? fmtQ(v) : v.toFixed(c.d);
+      return `<td><span class="${cls}">${txt}</span></td>`;
+    };
+    return `<tr>${COLS.map(cell).join("")}</tr>`;
+  }).join("");
+}
+
+document.querySelectorAll(".filter").forEach(b => b.addEventListener("click", () => {
+  family = b.dataset.f;
+  document.querySelectorAll(".filter").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+  renderRanking();
+}));
+
+// Table 2: REGAIN vs external datasets. null = not available.
+const EXT = [
+  ["STAC", "L", [85.6, 88.0, 22.11], null, null],
+  ["STAC-Single", "L", [58.0, 25.6, 15.47], null, null],
+  ["LogpZO", "L", [64.8, 68.4, 16.68], [68.57, 55.88, 5.600], [70.40, 47.60, 2.529]],
+  ["FIPER", "L", [65.0, 43.6, 20.76], null, null],
+  ["SAFE-MLP", "L", [76.4, 65.2, 23.37], [69.49, 46.47, 12.312], [94.73, 98.00, 1.373]],
+  ["SAFE-LSTM", "L", [71.8, 52.8, 17.69], [61.58, 49.41, 15.205], [97.27, 98.80, 1.383]],
+  ["Hide-and-Seek", "L", [76.0, 76.4, 14.53], [70.61, 46.08, 12.053], [90.04, 99.78, 1.219]],
+  ["ActProbe", "L", [80.0, 75.6, 27.99], null, null],
+  ["FailureSpot", "L", [67.2, 56.4, 10.41], null, null],
+  ["PRM-as-a-Judge", "V", [85.0, 84.8, 18.95], [59.56, 94.12, 8.159], [64.20, 70.40, 4.299]],
+  ["RoboMeter", "V", [66.6, 99.6, 15.47], [48.53, 97.06, 9.466], [74.40, 66.00, 4.470]],
+  ["Qwen3-VL-4B", "V", [56.4, 78.8, 18.66], [54.41, 8.82, 0.711], [50.00, 0.00, null]],
+  ["Qwen3.5-0.8B Base", "V", [53.0, 80.4, 17.28], [40.44, 5.88, 31.500], [44.20, 15.60, 1.650]],
+  ["Qwen3.5-4B Base", "V", [54.8, 51.6, 14.52], [54.41, 8.82, 3.433], [50.00, 0.00, null]],
+  ["Qwen3.5-0.8B FailSafe-style", "V", [89.2, 97.2, 6.74], [70.96, 79.41, 7.142], [84.20, 73.60, 2.583]],
+  ["Qwen3.5-4B FailSafe-style", "V", [89.0, 95.6, 7.57], [75.74, 76.47, 3.624], [85.80, 77.20, 1.949]],
+  ["Gemini 3.8 Flash", "A", [52.0, 100.0, 19.35], [50.00, 100.00, 17.976], [51.60, 94.40, 0.978]],
+  ["GPT 6.1 Sol", "A", [56.4, 100.0, 15.11], [50.00, 100.00, 17.964], [63.40, 92.40, 0.988]],
+  ["DeepSeek V4.1 Flash", "A", [53.4, 100.0, 22.55], [50.00, 100.00, 18.226], [47.80, 93.20, 1.168]],
+];
+
+function renderExt() {
+  const metrics = [["bACC", "↑", false], ["Recall", "↑", false], ["MAE (s)", "↓", true]];
+  document.getElementById("ext-head").innerHTML = [0, 1, 2].map(() =>
+    metrics.map(([l, d]) => `<th scope="col">${l} <span class="dir">${d}</span></th>`).join("")).join("");
+  const marks = [2, 3, 4].map(ds => metrics.map(([, , lower], j) => {
+    const vals = [...new Set(EXT.map(r => r[ds] && r[ds][j]).filter(v => v !== null && v !== undefined))]
+      .sort((a, b) => lower ? a - b : b - a);
+    return { best: vals[0], second: vals[1] };
+  }));
+  document.getElementById("ext-body").innerHTML = EXT.map(r => {
+    const groups = [2, 3, 4].map((ds, gi) => {
+      if (!r[ds]) return '<td class="dash">–</td>'.repeat(3);
+      return r[ds].map((v, j) => {
+        if (v === null) return '<td class="dash">–</td>';
+        const m = marks[gi][j];
+        const cls = v === m.best ? "best" : v === m.second ? "second" : "";
+        const digits = ds === 2 ? (j === 2 ? 2 : 1) : (j === 2 ? 3 : 2);
+        return `<td><span class="${cls}">${v.toFixed(digits)}</span></td>`;
+      }).join("");
+    }).join("");
+    return `<tr><td class="name l">${r[0]} <span class="chip ${r[1]}">${FAM[r[1]]}</span></td>${groups}</tr>`;
+  }).join("");
+}
+
+function drawKernel() {
+  const svg = document.getElementById("kernel");
+  const W = 440, H = 190, L = 40, R = 16, T = 14, B = 34;
+  const x = d => L + (d + 40) / 80 * (W - L - R);
+  const y = k => T + (1 - k) * (H - T - B);
+  let s = "";
+  [0, 0.5, 1].forEach(k => {
+    s += `<line class="svg-axis" x1="${L}" x2="${W - R}" y1="${y(k)}" y2="${y(k)}"/>`;
+    s += `<text class="svg-tick" x="${L - 8}" y="${y(k) + 4}" text-anchor="end">${k}</text>`;
+  });
+  [-40, -20, -10, 0, 10, 20, 40].forEach(d => {
+    s += `<text class="svg-tick" x="${x(d)}" y="${H - B + 18}" text-anchor="middle">${d > 0 ? "+" + d : d}</text>`;
+  });
+  s += `<text class="svg-tick" x="${W - R}" y="${H - 2}" text-anchor="end">alarm − onset (s)</text>`;
+  s += `<line class="svg-onset" x1="${x(0)}" x2="${x(0)}" y1="${T}" y2="${H - B}"/>`;
+  let p = "";
+  for (let d = -40; d <= 40; d += 0.5) p += (p ? "L" : "M") + x(d).toFixed(1) + "," + y(1 / (1 + (d / 10) ** 2)).toFixed(1);
+  s += `<path class="svg-curve" d="${p}"/>`;
+  [-10, 10].forEach(d => { s += `<circle cx="${x(d)}" cy="${y(0.5)}" r="3.5" fill="var(--accent)"/>`; });
+  s += `<text class="svg-label" x="${x(0) + 6}" y="${T + 12}">onset</text>`;
+  svg.insertAdjacentHTML("beforeend", s);
+}
+
+renderRanking();
+renderExt();
+drawKernel();
+</script>
+</body>
+</html>
