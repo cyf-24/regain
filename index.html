@@ -216,7 +216,7 @@ footer { color: var(--muted); font-size: 13px; border-top: 1px solid var(--rule)
     </div>
     <h3>Notes on the current results</h3>
     <ul class="caveats">
-      <li>The REGAIN roster was updated on 23 October 2026: one RoboTwin click_alarmclock failure with an extreme-action anomaly was replaced by another failure of the same task. All non-API monitors are scored on the current roster.<span class="mark">*</span> API monitors were evaluated on the previous roster, which differs by that one episode.</li>
+      <li>The REGAIN roster was updated on 23 October 2026: one RoboTwin click_alarmclock failure with an extreme-action anomaly was replaced by another failure of the same task. All monitors, including the API monitors, are scored on the current roster.</li>
       <li>QLat values are retained batch-one profiles; API latency includes network and service time.</li>
       <li>bTWA in the ranking table approximates rollout length from the last query time for non-API monitors and from frame count for API monitors.</li>
     </ul>
@@ -227,7 +227,7 @@ footer { color: var(--muted); font-size: 13px; border-top: 1px solid var(--rule)
 
 <script>
 const FAM = { L: "Lightweight", V: "Small VLM", A: "API" };
-// REGAIN Track 1, current roster (API rows: previous roster). TNR and bACC in %, MAE s, QLat ms.
+// REGAIN Track 1, current roster (2026-10-23). TNR and bACC in %, MAE s, QLat ms.
 const ROWS = [
   { m: "Qwen3.5-0.8B FailSafe-style", f: "V", on: 78.64, bacc: 89.2, rec: 97.2, tnr: 81.2, mae: 6.74, btwa: 72.1, q: 104 },
   { m: "Qwen3.5-4B FailSafe-style", f: "V", on: 77.74, bacc: 89.0, rec: 95.6, tnr: 82.4, mae: 7.57, btwa: 72.2, q: 134 },
@@ -244,10 +244,10 @@ const ROWS = [
   { m: "Qwen3.5-4B Base", f: "V", on: 45.18, bacc: 54.8, rec: 51.6, tnr: 58.0, mae: 14.52, btwa: 49.2, q: 476 },
   { m: "RoboMeter", f: "V", on: 44.51, bacc: 66.6, rec: 99.6, tnr: 33.6, mae: 15.47, btwa: 51.2, q: 164 },
   { m: "Qwen3-VL-4B", f: "V", on: 36.03, bacc: 56.4, rec: 78.8, tnr: 34.0, mae: 18.66, btwa: 48.6, q: 215 },
-  { m: "GPT 6.1 Sol", f: "A", on: 35.36, bacc: 56.4, rec: 100.0, tnr: 12.8, mae: 15.11, btwa: 49.2, q: 57505, prev: true },
+  { m: "GPT 6.1 Sol", f: "A", on: 35.42, bacc: 56.4, rec: 100.0, tnr: 12.8, mae: 15.08, btwa: 49.2, q: 57505 },
   { m: "Qwen3.5-0.8B Base", f: "V", on: 32.82, bacc: 53.0, rec: 80.4, tnr: 25.6, mae: 17.28, btwa: 46.5, q: 192 },
-  { m: "Gemini 3.8 Flash", f: "A", on: 26.83, bacc: 52.0, rec: 100.0, tnr: 4.0, mae: 19.35, btwa: 48.0, q: 13206, prev: true },
-  { m: "DeepSeek V4.1 Flash", f: "A", on: 24.09, bacc: 53.4, rec: 100.0, tnr: 6.8, mae: 22.55, btwa: 50.3, q: 5776, prev: true },
+  { m: "Gemini 3.8 Flash", f: "A", on: 27.01, bacc: 52.0, rec: 100.0, tnr: 4.0, mae: 19.24, btwa: 47.9, q: 13206 },
+  { m: "DeepSeek V4.1 Flash", f: "A", on: 24.13, bacc: 53.4, rec: 100.0, tnr: 6.8, mae: 22.49, btwa: 50.3, q: 5776 },
 ].map((r, i) => ({ ...r, rank: i + 1, tds: 2 * r.on - r.tnr }));
 
 const COLS = [
@@ -336,9 +336,9 @@ const EXT = [
   ["Qwen3.5-4B Base", "V", [54.8, 51.6, 14.52], [54.41, 8.82, 3.433], [50.00, 0.00, null]],
   ["Qwen3.5-0.8B FailSafe-style", "V", [89.2, 97.2, 6.74], [70.96, 79.41, 7.142], [84.20, 73.60, 2.583]],
   ["Qwen3.5-4B FailSafe-style", "V", [89.0, 95.6, 7.57], [75.74, 76.47, 3.624], [85.80, 77.20, 1.949]],
-  ["Gemini 3.8 Flash", "A", [52.0, 100.0, 19.35], [50.00, 100.00, 17.976], [51.60, 94.40, 0.978]],
-  ["GPT 6.1 Sol", "A", [56.4, 100.0, 15.11], [50.00, 100.00, 17.964], [63.40, 92.40, 0.988]],
-  ["DeepSeek V4.1 Flash", "A", [53.4, 100.0, 22.55], [50.00, 100.00, 18.226], [47.80, 93.20, 1.168]],
+  ["Gemini 3.8 Flash", "A", [52.0, 100.0, 19.24], [50.00, 100.00, 17.976], [51.60, 94.40, 0.978]],
+  ["GPT 6.1 Sol", "A", [56.4, 100.0, 15.08], [50.00, 100.00, 17.964], [63.40, 92.40, 0.988]],
+  ["DeepSeek V4.1 Flash", "A", [53.4, 100.0, 22.49], [50.00, 100.00, 18.226], [47.80, 93.20, 1.168]],
 ];
 
 function renderExt() {
