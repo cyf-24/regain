@@ -220,29 +220,29 @@ footer { color: var(--muted); font-size: 13px; border-top: 1px solid var(--rule)
     </ul>
   </section>
 
-  <footer>REGAIN: Benchmarking Failure Detection and Recovery for Robot Foundation Models. Track 1 results as of 2 November 2026.</footer>
+  <footer>REGAIN: Benchmarking Failure Detection and Recovery for Robot Foundation Models. Track 1 results as of 3 November 2026.</footer>
 </div>
 
 <script>
 const FAM = { L: "Lightweight", V: "Small VLM", A: "API" };
 // REGAIN Track 1, 1,000 rollouts (2026-11-02). TNR and bACC in %, MAE s, QLat ms.
 const ROWS = [
-  { m: "Qwen3.5-0.8B FailSafe-style", f: "V", on: 75.06, bacc: 88.0, rec: 96.2, tnr: 79.8, mae: 8.18, q: 133 },
-  { m: "Qwen3.5-4B FailSafe-style", f: "V", on: 70.78, bacc: 83.2, rec: 95.2, tnr: 71.2, mae: 8.04, q: 263 },
+  { m: "Qwen3.5-4B FailSafe-style", f: "V", on: 75.66, bacc: 87.9, rec: 95.6, tnr: 80.2, mae: 7.62, q: 147 },
+  { m: "Qwen3.5-0.8B FailSafe-style", f: "V", on: 75.04, bacc: 88.0, rec: 96.2, tnr: 79.8, mae: 8.19, q: 133 },
   { m: "STAC", f: "L", on: 61.75, bacc: 84.0, rec: 78.8, tnr: 89.2, mae: 23.38, q: 12729 },
-  { m: "PRM-as-a-Judge", f: "V", on: 60.69, bacc: 87.2, rec: 87.6, tnr: 86.8, mae: 19.84, q: 500 },
-  { m: "SAFE-MLP", f: "L", on: 58.90, bacc: 74.9, rec: 58.4, tnr: 91.4, mae: 23.43, q: 9.96 },
+  { m: "PRM-as-a-Judge", f: "V", on: 60.71, bacc: 87.2, rec: 87.6, tnr: 86.8, mae: 19.84, q: 500 },
+  { m: "SAFE-MLP", f: "L", on: 58.89, bacc: 74.9, rec: 58.4, tnr: 91.4, mae: 23.43, q: 9.96 },
   { m: "FailureSpot", f: "L", on: 58.03, bacc: 68.8, rec: 59.8, tnr: 77.8, mae: 11.75, q: 1.08 },
   { m: "SAFE-LSTM", f: "L", on: 57.48, bacc: 64.2, rec: 32.6, tnr: 95.8, mae: 15.19, q: 12.9 },
-  { m: "Hide-and-Seek", f: "L", on: 56.95, bacc: 77.2, rec: 78.2, tnr: 76.2, mae: 18.46, q: 6.31 },
-  { m: "FIPER", f: "L", on: 54.73, bacc: 68.4, rec: 54.2, tnr: 82.6, mae: 18.95, q: 17255 },
+  { m: "Hide-and-Seek", f: "L", on: 56.96, bacc: 77.2, rec: 78.2, tnr: 76.2, mae: 18.45, q: 6.31 },
+  { m: "FIPER", f: "L", on: 54.74, bacc: 68.4, rec: 54.2, tnr: 82.6, mae: 18.94, q: 17255 },
   { m: "STAC-Single", f: "L", on: 53.46, bacc: 62.5, rec: 33.2, tnr: 91.8, mae: 21.48, q: 1793 },
-  { m: "ActProbe", f: "L", on: 52.38, bacc: 79.6, rec: 84.4, tnr: 74.8, mae: 25.92, q: 1.37 },
+  { m: "ActProbe", f: "L", on: 52.36, bacc: 79.6, rec: 84.4, tnr: 74.8, mae: 25.93, q: 1.37 },
   { m: "LogpZO", f: "L", on: 48.20, bacc: 63.9, rec: 61.0, tnr: 66.8, mae: 18.91, q: 118 },
-  { m: "RoboMeter", f: "V", on: 46.82, bacc: 70.0, rec: 98.6, tnr: 41.4, mae: 15.61, q: 402 },
-  { m: "Qwen3.5-4B Base", f: "V", on: 45.06, bacc: 53.9, rec: 49.0, tnr: 58.8, mae: 13.54, q: 417 },
-  { m: "Qwen3-VL-4B", f: "V", on: 41.80, bacc: 62.1, rec: 80.0, tnr: 44.2, mae: 18.18, q: 485 },
-  { m: "Qwen3.5-0.8B Base", f: "V", on: 40.19, bacc: 58.8, rec: 76.4, tnr: 41.2, mae: 19.04, q: 472 },
+  { m: "RoboMeter", f: "V", on: 46.80, bacc: 70.0, rec: 98.6, tnr: 41.4, mae: 15.62, q: 402 },
+  { m: "Qwen3.5-4B Base", f: "V", on: 45.04, bacc: 53.9, rec: 49.0, tnr: 58.8, mae: 13.55, q: 417 },
+  { m: "Qwen3-VL-4B", f: "V", on: 41.78, bacc: 62.1, rec: 80.0, tnr: 44.2, mae: 18.19, q: 485 },
+  { m: "Qwen3.5-0.8B Base", f: "V", on: 40.18, bacc: 58.8, rec: 76.4, tnr: 41.2, mae: 19.05, q: 472 },
 ].map((r, i) => ({ ...r, rank: i + 1, tds: 2 * r.on - r.tnr }));
 
 const COLS = [
@@ -317,19 +317,19 @@ const EXT = [
   ["STAC", "L", [84.0, 78.8, 23.38], null, null],
   ["STAC-Single", "L", [62.5, 33.2, 21.48], null, null],
   ["LogpZO", "L", [63.9, 61.0, 18.91], [68.57, 55.88, 5.600], [70.40, 47.60, 2.529]],
-  ["FIPER", "L", [68.4, 54.2, 18.95], null, null],
+  ["FIPER", "L", [68.4, 54.2, 18.94], null, null],
   ["SAFE-MLP", "L", [74.9, 58.4, 23.43], [69.49, 46.47, 12.312], [94.73, 98.00, 1.373]],
   ["SAFE-LSTM", "L", [64.2, 32.6, 15.19], [61.58, 49.41, 15.205], [97.27, 98.80, 1.383]],
-  ["Hide-and-Seek", "L", [77.2, 78.2, 18.46], [70.61, 46.08, 12.053], [90.04, 99.78, 1.219]],
-  ["ActProbe", "L", [79.6, 84.4, 25.92], null, null],
+  ["Hide-and-Seek", "L", [77.2, 78.2, 18.45], [70.61, 46.08, 12.053], [90.04, 99.78, 1.219]],
+  ["ActProbe", "L", [79.6, 84.4, 25.93], null, null],
   ["FailureSpot", "L", [68.8, 59.8, 11.75], null, null],
   ["PRM-as-a-Judge", "V", [87.2, 87.6, 19.84], [59.56, 94.12, 8.159], [64.20, 70.40, 4.299]],
-  ["RoboMeter", "V", [70.0, 98.6, 15.61], [48.53, 97.06, 9.466], [74.40, 66.00, 4.470]],
-  ["Qwen3-VL-4B", "V", [62.1, 80.0, 18.18], [54.41, 8.82, 0.711], [50.00, 0.00, null]],
-  ["Qwen3.5-0.8B Base", "V", [58.8, 76.4, 19.04], [40.44, 5.88, 31.500], [44.20, 15.60, 1.650]],
-  ["Qwen3.5-4B Base", "V", [53.9, 49.0, 13.54], [54.41, 8.82, 3.433], [50.00, 0.00, null]],
-  ["Qwen3.5-0.8B FailSafe-style", "V", [88.0, 96.2, 8.18], [70.96, 79.41, 7.142], [84.20, 73.60, 2.583]],
-  ["Qwen3.5-4B FailSafe-style", "V", [83.2, 95.2, 8.04], [75.74, 76.47, 3.624], [85.80, 77.20, 1.949]],
+  ["RoboMeter", "V", [70.0, 98.6, 15.62], [48.53, 97.06, 9.466], [74.40, 66.00, 4.470]],
+  ["Qwen3-VL-4B", "V", [62.1, 80.0, 18.19], [54.41, 8.82, 0.711], [50.00, 0.00, null]],
+  ["Qwen3.5-0.8B Base", "V", [58.8, 76.4, 19.05], [40.44, 5.88, 31.500], [44.20, 15.60, 1.650]],
+  ["Qwen3.5-4B Base", "V", [53.9, 49.0, 13.55], [54.41, 8.82, 3.433], [50.00, 0.00, null]],
+  ["Qwen3.5-0.8B FailSafe-style", "V", [88.0, 96.2, 8.19], [70.96, 79.41, 7.142], [84.20, 73.60, 2.583]],
+  ["Qwen3.5-4B FailSafe-style", "V", [87.9, 95.6, 7.62], [75.74, 76.47, 3.624], [85.80, 77.20, 1.949]],
   ["Gemini 3.8 Flash", "A", null, [50.00, 100.00, 17.976], [51.60, 94.40, 0.978]],
   ["GPT 6.1 Sol", "A", null, [50.00, 100.00, 17.964], [63.40, 92.40, 0.988]],
   ["DeepSeek V4.1 Flash", "A", null, [50.00, 100.00, 18.226], [47.80, 93.20, 1.168]],
